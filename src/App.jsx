@@ -27,7 +27,7 @@ const chatReducer = (state, action) => {
 }
 
 export const App = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema)
   })
   // Estado que guarda la respuesta de gemma
@@ -37,7 +37,9 @@ export const App = () => {
 
   const handlePregunta = async (data) => {
     console.log(data)
+    dispatch({ type: 'ADD_MESSAGE', payload: { from: 'user', text: data.userInput } }) // Agregar la respuesta de gemma al estado
     setLoading(true)
+    reset() // Limpiar el input después de enviar la pregunta
     try {
       const res = await axios.post('http://localhost:11434/api/generate', {
         model: 'gemma2:2b',
@@ -46,7 +48,7 @@ export const App = () => {
       })
       setResponse(res.data.response)
       // Agregar el mensaje al estado
-      dispatch({ type: 'ADD_MESSAGE', payload: { from: 'user', text: data.userInput } }) // Agregar la respuesta de gemma al estado
+
       dispatch({ type: 'ADD_MESSAGE', payload: { from: 'gemma', text: res.data.response } }) // Agregar la respuesta de gemma al estado
     } catch (error) {
       console.error('Error:', error)
@@ -70,7 +72,18 @@ export const App = () => {
 
           {/* Response area */}
           <div className='min-h-20 bg-gray-800 rounded-xl px-4 py-3 text-sm text-gray-400 leading-relaxed'>
-            {loading ? 'Generando respuesta...' : response}
+
+            {
+              state.messages.map((msg, index) => (
+                <p key={index}>
+                  <strong>{msg.from === 'user' ? 'Tú' : 'Gemma'}:</strong> {msg.text}
+                </p>
+              ))
+            }
+
+            {loading && (
+              <p className='italic text-gray-500'>Generando respuesta...</p>
+            )}
           </div>
 
           {/* Form */}
