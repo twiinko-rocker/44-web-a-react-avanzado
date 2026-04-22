@@ -1,7 +1,7 @@
 import { createContext, useReducer } from 'react'
 
 // 1. Crear el contexto global
-export const ChatContext = createContext()
+export const ChatContext = createContext() // Aquí puedes definir el estado inicial y el reducer para manejar las acciones relacionadas con el chat
 
 const initialState = {
   messages: []
@@ -20,14 +20,12 @@ const chatReducer = (state, action) => {
   }
 }
 
-// dispatch({ type: 'ADD_MESSAGE', payload: { from: 'bot', text: res.data.response } })
-
 // 2. Crear proveedor
 
-export const ChatProvider = ({ children }) => {
+export const ChatProvider = ({ children }) => { // Aquí puedes implementar la lógica para manejar el estado del chat y proporcionar funciones para actualizarlo
   const [state, dispatch] = useReducer(chatReducer, initialState)
   return (
-    <ChatContext.Provider values={{ state, dispatch }}>
+    <ChatContext.Provider value={{ state, dispatch }}>
       {children}
     </ChatContext.Provider>
   )

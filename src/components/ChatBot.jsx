@@ -17,15 +17,22 @@ export const ChatBot = () => {
     resolver: yupResolver(schema)
   })
   const { state, dispatch } = useContext(ChatContext)
-  const { sendMessage, loading } = useOllama()
+  const { sendMessage } = useOllama()
 
   const handlePregunta = async (data) => {
     console.log(data)
-    dispatch({ type: 'ADD_MESSAGE', payload: { from: 'user', text: data.userInput } })
-    dispatch({ type: 'SET_LOADING', payload: true })
-
-    setLoading(true)
+    dispatch({ type: 'ADD_MESSAGE', payload: { from: 'user', text: data.userInput } }) // Agregar el mensaje del usuario al estado global
     reset()
+    dispatch({ type: 'SET_LOADING', payload: true }) // Establecer el estado de carga a true antes de enviar la solicitud
+
+    try {
+      const res = await sendMessage(data.userInput) // Aquí deberías manejar la respuesta de tu API y agregar el mensaje del bot al estado
+      dispatch({ type: 'ADD_MESSAGE', payload: { from: 'bot', text: res.data.response } })// Agregar el mensaje del bot al estado global con la respuesta de la API
+    } catch (error) {
+      dispatch({ type: 'ADD_MESSAGE', payload: { from: 'bot', text: 'Lo siento, hubo un error al procesar tu solicitud.' } }) // Agregar un mensaje de error del bot al estado en caso de fallo
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
   }
 
   return (
@@ -53,7 +60,7 @@ export const ChatBot = () => {
               ))
             }
 
-            {loading && (
+            {state.loading && (
               <p className='italic text-gray-500'>Generando respuesta...</p>
             )}
           </div>
